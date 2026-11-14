@@ -38,7 +38,7 @@ Os servicos nao dependem de manter o terminal PowerShell aberto.
 - Keycloak: http://localhost:8081
 - Credenciais locais: .demo/acessos.txt
 
-Use aluno.teste e a senha gerada. O administrador do Keycloak e separado.
+Use zezinho e a senha 1234 (apenas demonstracao local). O administrador do Keycloak e separado.
 Nao envie .demo, .env ou suas senhas para GitHub ou grupos.
 Os scripts nao alteram variaveis permanentes do Windows nem exigem SECRET_KEY
 configurada manualmente. As configuracoes usadas pelo Compose ficam em .demo.
@@ -128,7 +128,7 @@ redirect URIs no Keycloak; trocar apenas uma porta quebra a autenticacao.
 
 1. Abrir localhost:5000; o portal encaminha diretamente ao Keycloak.
 2. Conferir que a senha e solicitada em localhost:8081.
-3. Entrar como aluno.teste e verificar perfil, inicio, calendario e comunicados.
+3. Entrar como zezinho e verificar perfil, inicio, calendario e comunicados.
 4. Em Configuracoes, abrir Gerenciar conta e alterar senha.
 5. Marcar Remember Me no login do Keycloak, fechar o navegador e reabrir /perfil.
    O Flask usa cookie de sessao para OIDC; ao perder esse cookie, pede novamente

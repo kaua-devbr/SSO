@@ -65,7 +65,7 @@ O terminal pode ser fechado: os serviços continuam no Docker.
 ### 2.4 Entrar
 
 Abra **http://localhost:5000**. O portal encaminha diretamente para a página do
-Keycloak. Entre com `aluno.teste` e a senha inicial consultada localmente:
+Keycloak. Entre com `zezinho` e a senha de demonstracao `1234`. Consulte tambem as credenciais administrativas localmente:
 
 ```powershell
 Get-Content .\.demo\acessos.txt
@@ -256,6 +256,7 @@ pelo Dockerfile; não mova `templates` ou `static` sem ajustar essa configuraç�
 | `docker-comum.ps1` | Localiza Docker, confere motor Linux e Compose; suporte dos outros scripts |
 | `preparar.ps1` | Build/pull ou importação offline, geração local e validação do Compose |
 | `configurar_demo.py` | Gera realm, cliente, aluno e chaves; preserva configurações já existentes |
+| `ajustar_usuario_demo.py` | Migração explícita da conta local para zezinho/1234; altera a senha no Keycloak ativo e os registros locais, não roda automaticamente ao iniciar |
 | `iniciar.ps1` | `compose up` em segundo plano, aguarda saúde e abre o portal |
 | `parar.ps1` | `compose stop`, sem excluir dados |
 | `exportar-offline.ps1` | Salva imagens em TAR e registra hash SHA-256 e arquitetura |
@@ -295,8 +296,7 @@ git push
 ```
 
 Commit salva localmente; push envia ao GitHub. Outra pessoa precisa baixar a
-versão publicada e preparar sua própria instalação. Cada máquina gera contas
-e chaves novas: não recebe automaticamente seus usuários, alterações de senha,
+versão publicada e preparar sua própria instalação. Cada maquina gera suas chaves internas e a conta de demonstracao zezinho/1234: não recebe automaticamente seus usuários, alterações de senha,
 cookies nem o volume Docker. Código portátil não é backup do banco.
 
 Não apague `.demo` em uma instalação já usada: gerar um novo segredo sem mudar

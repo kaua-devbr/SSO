@@ -10,7 +10,7 @@ O arquivo que gera a instalação é `scripts/configurar_demo.py`. Ele escreve
 - Callback: http://localhost:5000/auth/callback.
 - Retorno do logout: http://localhost:5000/.
 - Emissor: http://localhost:8081/realms/unifica-demo.
-- Conta inicial: aluno.teste; senha aleatória registrada localmente em .demo/acessos.txt.
+- Conta inicial: zezinho; senha de demonstracao 1234, registrada em .demo/acessos.txt.
 - Administrador bootstrap: separado, para o console de administração.
 
 Não edite acessos.txt esperando mudar uma senha: altere-a pelo Keycloak.

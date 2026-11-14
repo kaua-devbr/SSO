@@ -28,7 +28,8 @@ else:
     if realm_path.exists() or keycloak_env.exists():
         raise SystemExit("Configuracao parcial encontrada. Restaure app.env antes de continuar.")
     secret = token_urlsafe(32)
-    admin_password, demo_password = token_urlsafe(20), token_urlsafe(12)
+    # Conta publica apenas para demonstracao local. Chaves internas continuam aleatorias.
+    admin_password, demo_password = token_urlsafe(20), "1234"
     realm = {
         "realm": "unifica-demo", "enabled": True, "rememberMe": True,
         "registrationAllowed": False, "resetPasswordAllowed": False,
@@ -46,8 +47,8 @@ else:
                            "post.logout.redirect.uris": "http://localhost:5000/"},
             "defaultClientScopes": ["web-origins", "acr", "profile", "roles", "email"],
         }],
-        "users": [{"username": "aluno.teste", "enabled": True,
-                   "firstName": "Aluno", "lastName": "Demonstracao",
+        "users": [{"username": "zezinho", "enabled": True,
+                   "firstName": "Zezinho", "lastName": "Demonstracao",
                    "email": "aluno@example.test", "emailVerified": True,
                    "credentials": [{"type": "password", "value": demo_password, "temporary": False}]}],
     }
@@ -61,5 +62,5 @@ else:
         "SESSION_COOKIE_SECURE=false\n", encoding="utf-8")
     (destino / "acessos.txt").write_text(
         f"APENAS DEMONSTRACAO LOCAL\nKeycloak: http://localhost:8081\nAdministrador: admin\nSenha: {admin_password}\n"
-        f"Aluno: aluno.teste\nSenha: {demo_password}\n", encoding="utf-8")
+        f"Aluno: zezinho\nSenha: {demo_password}\n", encoding="utf-8")
     print("Configuracao criada. Consulte .demo/acessos.txt. Nao compartilhe .demo.")

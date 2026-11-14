@@ -7,6 +7,11 @@ pelo Keycloak; não é necessário instalar Python no computador.
 
 ## Comece aqui
 
+**Primeira instalação em outro computador:** siga o
+[roteiro de instalação limpa no Windows](docs/INSTALACAO_LIMPA.md), com pré-requisitos,
+comandos, resultados esperados e diagnóstico. Leia também as pendências conhecidas
+antes de considerar a versão pronta para apresentação.
+
 Leia [o manual completo de execução](docs/EXECUCAO.md): pastas, primeira instalação,
 atualização, URLs HTTP/HTTPS, autenticação, dados, GitHub, offline e diagnóstico.
 

@@ -9,7 +9,9 @@
         <section aria-labelledby="seguranca">
             <h1 id="seguranca">Segurança da conta</h1>
             <div class="painel destaque seguranca">
-                <a class="botao" href="{{ url_for('auth.conta') }}">Gerenciar conta e alterar senha</a>
+                <a class="botao" href="{{ url_for('auth.alterar_senha') }}">Alterar minha senha</a>
+                <p>Escolha e confirme sua nova senha na tela segura do Keycloak. Ele pode solicitar sua senha atual.</p>
+                <a href="{{ url_for('auth.conta') }}">Gerenciar minha conta</a>
             </div>
         </section>
         <section aria-labelledby="aparencia">

@@ -164,6 +164,9 @@ class PortalTests(unittest.TestCase):
             self.assertEqual(len(realm["clients"]), 1)
             self.assertTrue(realm["rememberMe"])
             self.assertEqual(realm["clients"][0]["clientId"], "unifica-portal")
+            self.assertEqual(realm["users"][0]["username"], "zezinho")
+            self.assertEqual(realm["users"][0]["credentials"][0]["value"], "1234")
+            self.assertFalse(realm["users"][0]["credentials"][0]["temporary"])
 
     def test_generator_migrates_old_library_without_changing_secrets(self):
         with tempfile.TemporaryDirectory() as directory:

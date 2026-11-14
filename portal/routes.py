@@ -130,7 +130,7 @@ def configuracoes():
                 session["fonte"] = fonte
                 flash("Preferências salvas.", "sucesso")
         elif request.form.get("acao") == "senha":
-            return redirect(url_for("auth.conta"), code=303)
+            return redirect(url_for("auth.alterar_senha"), code=303)
         return redirect(url_for("portal.configuracoes"), code=303)
 
     return render_template("configuracoes.html")
