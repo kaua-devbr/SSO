@@ -1,5 +1,10 @@
 # UNIFICA — instalação limpa no Windows com Docker Desktop
 
+> Atualizacao MySQL: consulte [MYSQL.md](MYSQL.md). O Compose atual inclui
+> portal, Keycloak e MySQL, com volume mysql_data separado e porta local 3307.
+> Execute preparar antes de iniciar; reexporte pacotes offline com as tres imagens.
+> As telas ainda usam os dados anteriores; o CRUD sera integrado na proxima etapa.
+
 Este roteiro usa PowerShell, Docker Desktop com contêineres Linux e, opcionalmente,
 o terminal integrado do VS Code. Execute cada etapa separadamente. Se uma
 verificação falhar, resolva o problema antes de continuar.

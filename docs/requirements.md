@@ -1,7 +1,7 @@
 # Requisitos de execução
 
 Computador compatível com Docker Linux e Compose com --wait, motor funcionando,
-portas 5000/8081 disponíveis e internet na primeira preparação. Windows/macOS
+portas 5000/8081/3307 disponíveis e internet na primeira preparação. Windows/macOS
 podem usar Docker Desktop; Linux pode usar Docker Engine e Compose.
 
 Não requer Python, Java ou MySQL no host para a demo. Offline requer imagens

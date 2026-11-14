@@ -1,6 +1,8 @@
 # Documentação do UNIFICA
 
-1. [INSTALACAO_LIMPA.md](INSTALACAO_LIMPA.md): instalação do zero no Windows com Docker Desktop, verificações e diagnóstico.
+- [MYSQL.md](MYSQL.md): sete tabelas, conexão Python e acesso pelo Workbench.
+
+1. [tutorial.md](tutorial.md): instalação do zero no Windows com Docker Desktop, verificações e diagnóstico.
 2. [EXECUCAO.md](EXECUCAO.md): manual principal, instalação, pastas, comandos, rede e problemas.
 3. [APRESENTACAO.md](APRESENTACAO.md): roteiro Docker, pacote offline e hospedagem futura.
 4. [architecture.md](architecture.md): componentes e responsabilidades.

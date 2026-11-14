@@ -12,13 +12,16 @@ if ($Offline) {
     if ($arch -eq 'aarch64') { $arch = 'arm64' }
     if ($arch -ne $manifest.architecture) { throw 'Pacote offline de outra arquitetura. Exporte para a arquitetura deste computador.' }
     Invoke-Docker load -i offline/imagens.tar
+    Invoke-Docker image inspect mysql:8.4 --format "{{.Id}}" | Out-Null
 } else {
     Invoke-Docker build --pull -t unifica-portal:demo .
     Invoke-Docker pull quay.io/keycloak/keycloak:26.8.2
+    Invoke-Docker pull mysql:8.4
 }
 # O Python e executado dentro da imagem, nao precisa existir no Windows.
 $projectPath = (Get-Location).Path
 Invoke-Docker run --rm --user 0 --mount "type=bind,source=$projectPath,target=/workspace" --workdir /workspace --entrypoint python unifica-portal:demo scripts/configurar_demo.py
+Invoke-Docker run --rm --user 0 --mount "type=bind,source=$projectPath,target=/workspace" --workdir /workspace --entrypoint python unifica-portal:demo scripts/configurar_mysql.py
 # --quiet valida sem imprimir senhas interpoladas no terminal.
 Invoke-Docker compose config --quiet
 Write-Host 'Preparado. Execute .\scripts\iniciar.ps1. Contas locais: .demo\acessos.txt'

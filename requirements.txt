@@ -3,3 +3,4 @@ Authlib==1.6.5
 requests==2.32.5
 python-dotenv==1.2.1
 waitress==3.0.2
+mysql-connector-python==9.2.0

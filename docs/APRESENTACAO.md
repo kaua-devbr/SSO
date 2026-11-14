@@ -1,5 +1,10 @@
 # UNIFICA - executar com Docker
 
+> Atualizacao MySQL: consulte [MYSQL.md](MYSQL.md). O Compose atual inclui
+> portal, Keycloak e MySQL, com volume mysql_data separado e porta local 3307.
+> Execute preparar antes de iniciar; reexporte pacotes offline com as tres imagens.
+> As telas ainda usam os dados anteriores; o CRUD sera integrado na proxima etapa.
+
 Guia principal atualizado: [EXECUCAO.md](EXECUCAO.md). Consulte-o para o mapa
 de pastas, login único, endereços e rotina completa.
 

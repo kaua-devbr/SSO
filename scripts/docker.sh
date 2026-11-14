@@ -23,11 +23,14 @@ case "${1:-}" in
             [[ "$arch" != aarch64 ]] || arch=arm64
             [[ "$arch" == "$expected_arch" ]] || { echo 'Pacote de outra arquitetura.' >&2; exit 1; }
             docker load -i offline/imagens.tar
+            docker image inspect mysql:8.4 --format '{{.Id}}' >/dev/null
         else
             docker build --pull -t unifica-portal:demo .
             docker pull quay.io/keycloak/keycloak:26.8.2
+            docker pull mysql:8.4
         fi
         docker run --rm --user "$(id -u):$(id -g)" --mount "type=bind,source=$PWD,target=/workspace" --workdir /workspace --entrypoint python unifica-portal:demo scripts/configurar_demo.py
+        docker run --rm --user "$(id -u):$(id -g)" --mount "type=bind,source=$PWD,target=/workspace" --workdir /workspace --entrypoint python unifica-portal:demo scripts/configurar_mysql.py
         docker compose config --quiet
         echo 'Preparado. Use: bash scripts/docker.sh iniciar'
         ;;
@@ -43,7 +46,8 @@ case "${1:-}" in
         mkdir -p offline
         arch=$(docker image inspect unifica-portal:demo --format '{{.Architecture}}')
         [[ "$arch" == "$(docker image inspect quay.io/keycloak/keycloak:26.8.2 --format '{{.Architecture}}')" ]] || { echo 'Imagens de arquiteturas diferentes.' >&2; exit 1; }
-        docker save -o offline/imagens.tar unifica-portal:demo quay.io/keycloak/keycloak:26.8.2
+        [[ "$arch" == "$(docker image inspect mysql:8.4 --format '{{.Architecture}}')" ]] || { echo 'MySQL de outra arquitetura.' >&2; exit 1; }
+        docker save -o offline/imagens.tar unifica-portal:demo quay.io/keycloak/keycloak:26.8.2 mysql:8.4
         printf '{"architecture":"%s","sha256":"%s"}\n' "$arch" "$(checksum offline/imagens.tar)" > offline/manifest.json
         echo 'Pacote offline exportado. Nao copie .demo, .env, .venv ou .git.'
         ;;

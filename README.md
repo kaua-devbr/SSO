@@ -7,8 +7,12 @@ pelo Keycloak; não é necessário instalar Python no computador.
 
 ## Comece aqui
 
+**Banco escolar:** veja [MySQL e Workbench](docs/MYSQL.md). Execute preparar
+antes de iniciar esta versão: o Compose passa a incluir o MySQL. A integração
+das telas ao cadastro será a próxima etapa.
+
 **Primeira instalação em outro computador:** siga o
-[roteiro de instalação limpa no Windows](docs/INSTALACAO_LIMPA.md), com pré-requisitos,
+[roteiro de instalação limpa no Windows](docs/tutorial.md), com pré-requisitos,
 comandos, resultados esperados e diagnóstico. Leia também as pendências conhecidas
 antes de considerar a versão pronta para apresentação.
 

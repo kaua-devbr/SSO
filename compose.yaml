@@ -1,5 +1,20 @@
 name: unifica-demo
 services:
+  mysql:
+    image: mysql:8.4
+    env_file: .demo/mysql.env
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+00:00"]
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u \"$$MYSQL_USER\" -D \"$$MYSQL_DATABASE\" -e 'SELECT COUNT(*) FROM preferencias' >/dev/null 2>&1"]
+      start_period: 60s
+      interval: 10s
+      timeout: 5s
+      retries: 24
   keycloak:
     image: quay.io/keycloak/keycloak:26.8.2
     command: ["start-dev", "--import-realm"]
@@ -30,11 +45,15 @@ services:
   portal:
     image: unifica-portal:demo
     build: .
-    env_file: .demo/app.env
+    env_file:
+      - .demo/app.env
+      - .demo/database.env
     # Compartilha apenas a rede do Keycloak, nao a rede do computador.
     # Assim localhost:8081 funciona no navegador e no cliente OIDC do Flask.
     network_mode: "service:keycloak"
     depends_on:
+      mysql:
+        condition: service_healthy
       keycloak:
         condition: service_healthy
         restart: true
@@ -44,4 +63,5 @@ services:
       timeout: 5s
       retries: 6
 volumes:
+  mysql_data:
   keycloak_data:

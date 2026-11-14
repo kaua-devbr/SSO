@@ -1,5 +1,10 @@
 # UNIFICA — manual de execução e organização
 
+> Atualizacao MySQL: consulte [MYSQL.md](MYSQL.md). O Compose atual inclui
+> portal, Keycloak e MySQL, com volume mysql_data separado e porta local 3307.
+> Execute preparar antes de iniciar; reexporte pacotes offline com as tres imagens.
+> As telas ainda usam os dados anteriores; o CRUD sera integrado na proxima etapa.
+
 Este é o guia principal da versão Docker. O portal Flask apresenta as páginas
 escolares; o Keycloak autentica as pessoas pelo OpenID Connect (OIDC).
 Há um único login ativo: o do Keycloak. A Biblioteca foi retirada do pacote.
