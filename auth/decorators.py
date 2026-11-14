@@ -7,7 +7,7 @@ from flask import abort, redirect, request, session, url_for
 def login_required(view):
     @wraps(view)
     def protected(*args, **kwargs):
-        if not session.get("logado"):
+        if not session.get("logado") or session.get("auth_provider") != "keycloak":
             return redirect(url_for("auth.login"))
         if request.method == "POST":
             token = session.get("form_token")

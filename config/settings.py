@@ -19,12 +19,11 @@ def configurar_app(app):
         SECRET_KEY=chave,
         OIDC_CLIENT_ID=valores.get("OIDC_CLIENT_ID", "unifica-portal"),
         OIDC_CLIENT_SECRET=segredo,
-        OIDC_ISSUER=valores.get("OIDC_ISSUER", "http://localhost:8080/realms/unifica").rstrip("/"),
+        OIDC_ISSUER=valores.get("OIDC_ISSUER", "http://localhost:8081/realms/unifica-demo").rstrip("/"),
         PUBLIC_URL=valores.get("PUBLIC_URL", "http://localhost:5000").rstrip("/"),
         SESSION_COOKIE_NAME="unifica_portal",
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=valores.get("SESSION_COOKIE_SECURE", "false").lower() == "true",
         PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
-        DEMO_LOGIN_ENABLED=valores.get("DEMO_LOGIN_ENABLED", "false").lower() == "true",
     )

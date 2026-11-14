@@ -9,23 +9,7 @@
         <section aria-labelledby="seguranca">
             <h1 id="seguranca">Segurança da conta</h1>
             <div class="painel destaque seguranca">
-                {% if session.get('auth_provider') == 'keycloak' %}
                 <a class="botao" href="{{ url_for('auth.conta') }}">Gerenciar conta e alterar senha</a>
-                {% else %}
-                <details{% if mensagens | selectattr('0', 'equalto', 'erro-senha') | list %} open{% endif %}>
-                    <summary class="botao">Alterar senha</summary>
-                    <form method="post" action="{{ url_for('portal.configuracoes') }}" class="form-senha">
-                        <input type="hidden" name="form_token" value="{{ session.form_token }}">
-                        <input type="hidden" name="acao" value="senha">
-                        <label>Senha atual <input type="password" name="senha_atual" autocomplete="current-password" maxlength="128" required></label>
-                        <label>Nova senha <input type="password" name="nova_senha" autocomplete="new-password" minlength="8" maxlength="128" required></label>
-                        <label>Confirmar nova senha <input type="password" name="confirmacao" autocomplete="new-password" minlength="8" maxlength="128" required></label>
-                        <p>A senha de demonstração volta ao valor inicial quando o servidor reinicia.</p>
-                        <button type="submit" class="botao principal">Salvar nova senha</button>
-                    </form>
-                </details>
-                <p>Última atualização da senha: {{ senha_atualizada.strftime('%d/%m/%Y') if senha_atualizada else 'senha inicial' }}</p>
-                {% endif %}
             </div>
         </section>
         <section aria-labelledby="aparencia">

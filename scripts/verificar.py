@@ -2,6 +2,7 @@
 import ast
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -10,7 +11,7 @@ import tempfile
 import time
 import unittest
 from unittest.mock import patch
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -65,20 +66,50 @@ class PortalTests(unittest.TestCase):
         return result
 
     def test_login_and_pages(self):
-        self.assertEqual(self.client.get("/").status_code, 200)
+        self.assertEqual(self.client.get("/").location, "/auth/login")
         self.assertTrue(self.client.get("/perfil").location.endswith("/auth/login"))
         self.assertEqual(self.authenticate().status_code, 302)
         paths = ["/perfil", "/inicio", "/notas", "/calendario", "/comunicados", "/configuracoes"]
         for path in paths:
-            self.assertEqual(self.client.get(path).status_code, 200, path)
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200, path)
+            for resource in re.findall(r'(?:src|href)=["\'](/static/[^"\']+)', response.get_data(as_text=True)):
+                self.assertTrue((ROOT / unquote(urlsplit(resource).path).lstrip("/")).is_file(), resource)
         with self.client.session_transaction() as session:
             self.assertEqual(session["usuario_id"], "student-123")
             self.assertFalse(session.permanent)
             self.assertNotIn("access_token", session)
             self.assertNotIn("id_token", session)
 
+    def test_single_login_and_health(self):
+        self.assertEqual(self.client.post("/", data={"login": "zezinho", "senha": "1234"}).status_code, 405)
+        with self.client.session_transaction() as session:
+            session.update(logado=True, usuario="Antigo", nivel="adm")
+        self.assertEqual(self.client.get("/perfil").location, "/auth/login")
+        self.assertEqual(self.client.get("/").location, "/auth/login")
+        with patch.object(self.remote, "authorize_redirect", side_effect=AssertionError("health iniciou login")):
+            self.assertEqual(self.client.get("/healthz").json, {"status": "ok"})
+
     def test_bad_nonce(self):
         self.assertEqual(self.authenticate({"nonce": "wrong"}).status_code, 400)
+
+    def test_account_and_preferences_use_keycloak(self):
+        self.authenticate()
+        with self.client.session_transaction() as session:
+            csrf = session["form_token"]
+        result = self.client.post("/configuracoes", data={"form_token": csrf, "acao": "senha"})
+        self.assertEqual(result.location, "/auth/conta")
+        page = self.client.get("/configuracoes").get_data(as_text=True)
+        self.assertNotIn('type="password"', page)
+        self.assertIn('/auth/conta', page)
+        result = self.client.post("/configuracoes", data={"form_token": csrf, "acao": "aparencia", "tema": "escuro", "fonte": "grande"})
+        self.assertEqual(result.status_code, 303)
+        with self.client.session_transaction() as session:
+            self.assertEqual(session["tema"], "escuro")
+            self.assertEqual(session["fonte"], "grande")
+        result = self.client.post("/sair", data={"form_token": csrf})
+        self.assertEqual(result.status_code, 303)
+        self.assertIn("/protocol/openid-connect/logout?", result.location)
 
     def test_bad_audience(self):
         self.assertEqual(self.authenticate({"aud": "other-client"}).status_code, 400)

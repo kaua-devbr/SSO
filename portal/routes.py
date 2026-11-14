@@ -1,18 +1,9 @@
 from calendar import Calendar
 from datetime import date, timedelta
-from secrets import token_urlsafe
-from threading import Lock
-from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from auth.decorators import login_required
 
 portal = Blueprint("portal", __name__)
-
-USUARIOS_DEMO = [
-    {"login": "zezinho", "senha": generate_password_hash("1234"), "nivel": "adm", "nome": "Zezinho"},
-    {"login": "maria", "senha": generate_password_hash("4321"), "nivel": "normal", "nome": "Maria"},
-]
-senha_lock = Lock()
 
 MESES = (
     "janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho",
@@ -46,33 +37,17 @@ COMUNICADOS = [
 ]
 
 
-@portal.route("/", methods=["GET", "POST"])
+@portal.get("/")
 def login():
-    if session.get("logado"):
+    if session.get("logado") and session.get("auth_provider") == "keycloak":
         return redirect(url_for("portal.perfil"))
+    return redirect(url_for("auth.login"))
 
-    if not current_app.config.get("DEMO_LOGIN_ENABLED"):
-        return render_template("login_sso.html")
 
-    if request.method == "GET":
-        return render_template("login.html")
-
-    identificador = request.form.get("login", "").strip().lower()
-    senha = request.form.get("senha", "")
-
-    for usuario in USUARIOS_DEMO:
-        if usuario["login"] == identificador and len(senha) <= 128 and check_password_hash(usuario["senha"], senha):
-            session.clear()
-            session.permanent = request.form.get("lembrar") == "on"
-            session["logado"] = True
-            session["nivel"] = usuario["nivel"]
-            session["usuario"] = usuario["nome"]
-            session["login"] = usuario["login"]
-            session["form_token"] = token_urlsafe(32)
-            return redirect(url_for("portal.perfil"), code=303)
-
-    flash("Login ou senha inválidos.")
-    return render_template("login.html"), 400
+@portal.get("/healthz")
+def health():
+    # Sonda local: nao inicia login nem cria uma sessao OIDC.
+    return {"status": "ok"}
 
 
 @portal.get("/perfil")
@@ -146,7 +121,6 @@ def comunicados():
 @portal.route("/configuracoes", methods=["GET", "POST"])
 @login_required
 def configuracoes():
-    usuario = next((item for item in USUARIOS_DEMO if item["login"] == session["login"]), {})
     if request.method == "POST":
         if request.form.get("acao") == "aparencia":
             tema = request.form.get("tema")
@@ -156,37 +130,18 @@ def configuracoes():
                 session["fonte"] = fonte
                 flash("Preferências salvas.", "sucesso")
         elif request.form.get("acao") == "senha":
-            if session.get("auth_provider") == "keycloak":
-                return redirect(url_for("auth.conta"), code=303)
-            atual = request.form.get("senha_atual", "")
-            nova = request.form.get("nova_senha", "")
-            confirmacao = request.form.get("confirmacao", "")
-            with senha_lock:
-                if len(atual) > 128 or not check_password_hash(usuario["senha"], atual):
-                    flash("A senha atual está incorreta.", "erro-senha")
-                elif not 8 <= len(nova) <= 128:
-                    flash("A nova senha deve ter entre 8 e 128 caracteres.", "erro-senha")
-                elif nova != confirmacao:
-                    flash("A confirmação deve ser igual à nova senha.", "erro-senha")
-                elif nova == atual:
-                    flash("Escolha uma senha diferente da atual.", "erro-senha")
-                else:
-                    usuario["senha"] = generate_password_hash(nova)
-                    usuario["senha_atualizada"] = date.today()
-                    flash("Senha de demonstração alterada.", "sucesso")
+            return redirect(url_for("auth.conta"), code=303)
         return redirect(url_for("portal.configuracoes"), code=303)
 
-    return render_template("configuracoes.html", senha_atualizada=usuario.get("senha_atualizada"))
+    return render_template("configuracoes.html")
 
 
 @portal.post("/sair")
 @login_required
 def sair():
-    if session.get("auth_provider") == "keycloak":
-        from auth.auth import encerrar_sessao
-        return encerrar_sessao()
-    session.clear()
-    return redirect(url_for("portal.login"), code=303)
+    from auth.auth import encerrar_sessao
+    return encerrar_sessao()
+
 
 
 @portal.app_errorhandler(404)

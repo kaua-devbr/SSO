@@ -1,5 +1,8 @@
 # UNIFICA - executar com Docker
 
+Guia principal atualizado: [EXECUCAO.md](EXECUCAO.md). Consulte-o para o mapa
+de pastas, login único, endereços e rotina completa.
+
 ## O que mudou
 
 A biblioteca foi removida. Existem apenas dois servicos: portal Flask (Waitress)
@@ -123,7 +126,7 @@ redirect URIs no Keycloak; trocar apenas uma porta quebra a autenticacao.
 
 ## Testes de apresentacao
 
-1. Abrir localhost:5000 e clicar Entrar com a conta escolar.
+1. Abrir localhost:5000; o portal encaminha diretamente ao Keycloak.
 2. Conferir que a senha e solicitada em localhost:8081.
 3. Entrar como aluno.teste e verificar perfil, inicio, calendario e comunicados.
 4. Em Configuracoes, abrir Gerenciar conta e alterar senha.

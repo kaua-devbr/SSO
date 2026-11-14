@@ -58,7 +58,7 @@ else:
     config.write_text(
         f"SECRET_KEY={token_urlsafe(48)}\nOIDC_CLIENT_ID=unifica-portal\nOIDC_CLIENT_SECRET={secret}\n"
         "OIDC_ISSUER=http://localhost:8081/realms/unifica-demo\nPUBLIC_URL=http://localhost:5000\n"
-        "SESSION_COOKIE_SECURE=false\nDEMO_LOGIN_ENABLED=false\n", encoding="utf-8")
+        "SESSION_COOKIE_SECURE=false\n", encoding="utf-8")
     (destino / "acessos.txt").write_text(
         f"APENAS DEMONSTRACAO LOCAL\nKeycloak: http://localhost:8081\nAdministrador: admin\nSenha: {admin_password}\n"
         f"Aluno: aluno.teste\nSenha: {demo_password}\n", encoding="utf-8")
