@@ -9,6 +9,9 @@
         <section aria-labelledby="seguranca">
             <h1 id="seguranca">Segurança da conta</h1>
             <div class="painel destaque seguranca">
+                {% if session.get('auth_provider') == 'keycloak' %}
+                <a class="botao" href="{{ url_for('auth.conta') }}">Gerenciar conta e alterar senha</a>
+                {% else %}
                 <details{% if mensagens | selectattr('0', 'equalto', 'erro-senha') | list %} open{% endif %}>
                     <summary class="botao">Alterar senha</summary>
                     <form method="post" action="{{ url_for('portal.configuracoes') }}" class="form-senha">
@@ -22,6 +25,7 @@
                     </form>
                 </details>
                 <p>Última atualização da senha: {{ senha_atualizada.strftime('%d/%m/%Y') if senha_atualizada else 'senha inicial' }}</p>
+                {% endif %}
             </div>
         </section>
         <section aria-labelledby="aparencia">

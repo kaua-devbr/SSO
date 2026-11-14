@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Erro | Portal do Aluno</title>
-    <link rel="stylesheet" href="static/css/erro.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/erro.css') }}">
 </head>
 <body>
 
@@ -14,6 +14,10 @@
             <span>!</span>
         </div>
 
+        {% if codigo == 404 %}
+        <h1>Página não encontrada</h1>
+        <p class="error-message">Confira o endereço ou volte ao início.</p>
+        {% else %}
         <h1>Ops! Algo deu errado.</h1>
 
         <p class="error-message">
@@ -21,12 +25,13 @@
             Tente novamente em alguns instantes.
         </p>
 
+        {% endif %}
         <p class="error-code">
-            Código do erro: <strong>500</strong>
+            Código do erro: <strong>{{ codigo }}</strong>
         </p>
 
         <div class="error-actions">
-            <a href="/" class="primary-button">Voltar ao início</a>
+            <a href="{{ url_for('portal.login') }}" class="primary-button">Voltar ao início</a>
             <a href="javascript:history.back()" class="secondary-button">
                 Tentar novamente
             </a>

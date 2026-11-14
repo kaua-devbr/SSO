@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+.demo
+.venv
+.validation-deps
+offline
+__pycache__
+**/__pycache__
+docs

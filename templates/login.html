@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portal do Aluno</title>
-    <link rel="stylesheet" href="static/css/login.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
   </head>
 
   <body>
@@ -32,14 +32,17 @@
 
       <section class="welcome">
         <h1>Bem-vindo de volta</h1>
-        <p>Acesse sua conta para continuar</p>
+        <p>Senhas iniciais de demonstração: <strong>zezinho</strong> / <strong>1234</strong> ou <strong>maria</strong> / <strong>4321</strong>.</p>
       </section>
 
 
-      <form class="login-form" action="#" method="POST">
-        <!-- Matrícula ou e-mail -->
+      <form class="login-form" action="{{ url_for('portal.login') }}" method="POST">
+        {% for mensagem in get_flashed_messages() %}
+          <p class="login-error" role="alert">{{ mensagem }}</p>
+        {% endfor %}
+        <!-- Login -->
         <div class="form-group">
-          <label for="matricula">Matrícula ou e-mail</label>
+          <label for="login">Login</label>
 
           <div class="input-container">
             <svg
@@ -56,14 +59,14 @@
 
             <input
               type="text"
-              id="matricula"
-              name="matricula"
-              placeholder="Ex.: 20241234 ou nome@email.com"
+              id="login"
+              name="login"
+              placeholder="Ex.: zezinho"
               required
             />
           </div>
 
-          <small>Use o número de matrícula ou o e-mail cadastrado.</small>
+          <small>Use o identificador de demonstração mostrado acima.</small>
         </div>
 
         <!-- Senha -->
@@ -121,7 +124,7 @@
           <a href="#">Esqueceu sua senha?</a>
         </div>
 
-   
+
         <button type="submit" class="login-button">
           Entrar no portal
           <span>→</span>
@@ -135,5 +138,15 @@
         <span class="line"></span>
       </footer>
     </main>
+    <script>
+      const senha = document.getElementById('senha');
+      const alternarSenha = document.querySelector('.password-toggle');
+      alternarSenha.addEventListener('click', () => {
+        const mostrar = senha.type === 'password';
+        senha.type = mostrar ? 'text' : 'password';
+        alternarSenha.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+        alternarSenha.setAttribute('aria-pressed', String(mostrar));
+      });
+    </script>
   </body>
 </html>
