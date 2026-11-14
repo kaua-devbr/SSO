@@ -1,12 +1,13 @@
-$ErrorActionPreference = 'Stop'
-Set-Location (Split-Path $PSScriptRoot -Parent)
-$pythonDemo = Join-Path (Get-Location) '.venv\Scripts\python.exe'
-if (-not (Test-Path $pythonDemo)) { throw 'Execute preparar.ps1 com internet primeiro.' }
-New-Item -ItemType Directory -Force offline/wheels | Out-Null
-& $pythonDemo -m pip download --only-binary=:all: --dest offline/wheels -r requirements-lock.txt
-if ($LASTEXITCODE -ne 0) { throw 'Falha ao baixar pacotes Python.' }
-docker save -o offline/keycloak.tar quay.io/keycloak/keycloak:26.8.2
-if ($LASTEXITCODE -ne 0) { throw 'Falha ao exportar a imagem.' }
-& $pythonDemo -c "import platform; print(platform.python_version(), platform.machine())" | Set-Content offline/ambiente.txt
-Get-FileHash offline/keycloak.tar,offline/wheels/* -Algorithm SHA256 | Format-Table -AutoSize | Out-String -Width 300 | Set-Content offline/SHA256.txt
-Write-Host 'Copie o projeto e offline para o notebook, sem .venv, .git ou .demo. Use a mesma versao/arquitetura Python; veja offline/ambiente.txt.'
+. "$PSScriptRoot\docker-comum.ps1"
+New-Item -ItemType Directory -Force offline | Out-Null
+$portalArch = Invoke-Docker image inspect unifica-portal:demo --format '{{.Architecture}}'
+$keycloakArch = Invoke-Docker image inspect quay.io/keycloak/keycloak:26.8.2 --format '{{.Architecture}}'
+if ($portalArch -ne $keycloakArch) { throw 'As imagens precisam ter a mesma arquitetura.' }
+Invoke-Docker save -o offline/imagens.tar unifica-portal:demo quay.io/keycloak/keycloak:26.8.2
+$manifest = @{
+    architecture = $portalArch
+    sha256 = (Get-FileHash offline/imagens.tar -Algorithm SHA256).Hash.ToLower()
+    images = @('unifica-portal:demo','quay.io/keycloak/keycloak:26.8.2')
+}
+$manifest | ConvertTo-Json | Set-Content offline/manifest.json -Encoding ASCII
+Write-Host 'Copie o projeto e offline. Nao copie .demo, .env, .venv ou .git. No destino: preparar.ps1 -Offline.'

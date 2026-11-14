@@ -4,4 +4,4 @@ olá mundo eu voltei ao trabalho
 
 Consulte [o guia de apresentacao local, offline e hospedagem](docs/APRESENTACAO.md).
 
-Entrada: app.py. Segunda aplicacao SSO: biblioteca.py. Dependencias: requirements.txt. Configuracao: .env.example. Nenhum segredo deve ser enviado ao Git.
+Entrada: app.py. Dependencias: requirements.txt. Configuracao: .env.example. Nenhum segredo deve ser enviado ao Git.

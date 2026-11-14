@@ -1,22 +1,24 @@
 param([switch]$Offline)
-$ErrorActionPreference = 'Stop'
-Set-Location (Split-Path $PSScriptRoot -Parent)
-if (-not (Get-Command python -ErrorAction SilentlyContinue)) { throw 'Instale Python 3.12 de 64 bits com PATH.' }
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { throw 'Instale e inicie Docker Desktop com contêineres Linux.' }
-docker info *> $null
-if ($LASTEXITCODE -ne 0) { throw 'Inicie o Docker Desktop e aguarde o motor ficar pronto.' }
-python -m venv .venv
-if ($LASTEXITCODE -ne 0) { throw 'Falha ao criar ambiente Python.' }
-$pythonDemo = Join-Path (Get-Location) '.venv\Scripts\python.exe'
+. "$PSScriptRoot\docker-comum.ps1"
 if ($Offline) {
-    if (-not (Test-Path offline/keycloak.tar)) { throw 'Falta offline/keycloak.tar. Execute exportar-offline.ps1 antes, com internet.' }
-    & $pythonDemo -m pip install --no-index --find-links offline/wheels -r requirements-lock.txt
+    if (-not (Test-Path offline/imagens.tar) -or -not (Test-Path offline/manifest.json)) {
+        throw 'Falta o pacote offline. Exporte-o em uma maquina com internet usando exportar-offline.ps1.'
+    }
+    $manifest = Get-Content offline/manifest.json -Raw | ConvertFrom-Json
+    $hash = (Get-FileHash offline/imagens.tar -Algorithm SHA256).Hash.ToLower()
+    if ($hash -ne $manifest.sha256) { throw 'Hash do pacote offline nao confere. Copie o arquivo novamente.' }
+    $arch = Invoke-Docker info --format '{{.Architecture}}'
+    if ($arch -eq 'x86_64') { $arch = 'amd64' }
+    if ($arch -eq 'aarch64') { $arch = 'arm64' }
+    if ($arch -ne $manifest.architecture) { throw 'Pacote offline de outra arquitetura. Exporte para a arquitetura deste computador.' }
+    Invoke-Docker load -i offline/imagens.tar
 } else {
-    & $pythonDemo -m pip install -r requirements-lock.txt
+    Invoke-Docker build --pull -t unifica-portal:demo .
+    Invoke-Docker pull quay.io/keycloak/keycloak:26.8.2
 }
-if ($LASTEXITCODE -ne 0) { throw 'Falha ao instalar dependencias; confira Python e pacote offline.' }
-& $pythonDemo scripts/configurar_demo.py
-if ($LASTEXITCODE -ne 0) { throw 'Falha na configuracao local.' }
-if ($Offline) { docker load -i offline/keycloak.tar } else { docker compose pull }
-if ($LASTEXITCODE -ne 0) { throw 'Falha ao preparar imagem Keycloak.' }
-Write-Host 'Preparado. Execute .\scripts\iniciar.ps1 e consulte .demo\acessos.txt.'
+# O Python e executado dentro da imagem, nao precisa existir no Windows.
+$projectPath = (Get-Location).Path
+Invoke-Docker run --rm --user 0 --mount "type=bind,source=$projectPath,target=/workspace" --workdir /workspace --entrypoint python unifica-portal:demo scripts/configurar_demo.py
+# --quiet valida sem imprimir senhas interpoladas no terminal.
+Invoke-Docker compose config --quiet
+Write-Host 'Preparado. Execute .\scripts\iniciar.ps1. Contas locais: .demo\acessos.txt'

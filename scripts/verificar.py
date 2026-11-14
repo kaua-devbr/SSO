@@ -1,6 +1,5 @@
 """Testes locais sem MySQL/Keycloak real; tokens de teste sao assinados e validados."""
 import ast
-import importlib
 import json
 import os
 from pathlib import Path
@@ -19,17 +18,15 @@ sys.dont_write_bytecode = True
 # Somente este processo usa estas configuracoes ficticias.
 os.environ.pop("UNIFICA_ENV_FILE", None)
 os.environ.update(SECRET_KEY="test-only-portal", OIDC_CLIENT_SECRET="test-only-client",
-                  BIBLIOTECA_SECRET_KEY="test-only-library", BIBLIOTECA_OIDC_CLIENT_SECRET="test-only-library-client",
                   OIDC_ISSUER="https://identity.example.test/realms/test",
-                  OIDC_CLIENT_ID="unifica-portal", BIBLIOTECA_OIDC_CLIENT_ID="unifica-biblioteca",
-                  PUBLIC_URL="http://localhost:5000", BIBLIOTECA_PUBLIC_URL="http://localhost:5001",
+                  OIDC_CLIENT_ID="unifica-portal",
+                  PUBLIC_URL="http://localhost:5000",
                   SESSION_COOKIE_SECURE="false", DEMO_LOGIN_ENABLED="false")
 
 from authlib.jose import JsonWebKey, jwt
 from config.oidc import oauth
 
-module = importlib.import_module("biblioteca" if "--biblioteca" in sys.argv else "app")
-app = module.app
+from app import app
 app.config["TESTING"] = True
 
 
@@ -71,7 +68,7 @@ class PortalTests(unittest.TestCase):
         self.assertEqual(self.client.get("/").status_code, 200)
         self.assertTrue(self.client.get("/perfil").location.endswith("/auth/login"))
         self.assertEqual(self.authenticate().status_code, 302)
-        paths = ["/perfil"] if module.__name__ == "biblioteca" else ["/perfil", "/inicio", "/notas", "/calendario", "/comunicados", "/configuracoes"]
+        paths = ["/perfil", "/inicio", "/notas", "/calendario", "/comunicados", "/configuracoes"]
         for path in paths:
             self.assertEqual(self.client.get(path).status_code, 200, path)
         with self.client.session_transaction() as session:
@@ -114,13 +111,12 @@ class PortalTests(unittest.TestCase):
         for folder in ["auth", "config", "portal", "crud_usuarios", "scripts"]:
             for file in (ROOT / folder).rglob("*.py"):
                 ast.parse(file.read_text(encoding="utf-8"))
-        if module.__name__ != "biblioteca":
-            for file in (ROOT / "templates").glob("*.html"):
-                app.jinja_env.get_template(file.name)
-            for file in (ROOT / "static").rglob("*"):
-                if file.is_file():
-                    with self.client.get("/static/" + file.relative_to(ROOT / "static").as_posix()) as response:
-                        self.assertEqual(response.status_code, 200)
+        for file in (ROOT / "templates").glob("*.html"):
+            app.jinja_env.get_template(file.name)
+        for file in (ROOT / "static").rglob("*"):
+            if file.is_file():
+                with self.client.get("/static/" + file.relative_to(ROOT / "static").as_posix()) as response:
+                    self.assertEqual(response.status_code, 200)
         self.assertNotIn("mysql.connector", sys.modules)
 
     def test_generator_preserves_keys(self):
@@ -134,9 +130,30 @@ class PortalTests(unittest.TestCase):
             subprocess.run([sys.executable, str(script)], check=True, capture_output=True)
             self.assertEqual(original, (root / ".demo/app.env").read_bytes())
             realm = json.loads((root / ".demo/import/unifica-demo-realm.json").read_text())
-            self.assertEqual(len(realm["clients"]), 2)
+            self.assertEqual(len(realm["clients"]), 1)
             self.assertTrue(realm["rememberMe"])
-            self.assertNotEqual(realm["clients"][0]["secret"], realm["clients"][1]["secret"])
+            self.assertEqual(realm["clients"][0]["clientId"], "unifica-portal")
+
+    def test_generator_migrates_old_library_without_changing_secrets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "scripts").mkdir()
+            script = root / "scripts/configurar_demo.py"
+            shutil.copyfile(ROOT / "scripts/configurar_demo.py", script)
+            subprocess.run([sys.executable, str(script)], check=True, capture_output=True)
+            env_path = root / ".demo/app.env"
+            original = env_path.read_text()
+            env_path.write_text(original + "BIBLIOTECA_SECRET_KEY=obsolete\n")
+            realm_path = root / ".demo/import/unifica-demo-realm.json"
+            realm = json.loads(realm_path.read_text())
+            portal_secret = realm["clients"][0]["secret"]
+            realm["clients"].append({"clientId": "unifica-biblioteca"})
+            realm_path.write_text(json.dumps(realm))
+            subprocess.run([sys.executable, str(script)], check=True, capture_output=True)
+            self.assertEqual(env_path.read_text(), original)
+            migrated = json.loads(realm_path.read_text())
+            self.assertEqual(len(migrated["clients"]), 1)
+            self.assertEqual(migrated["clients"][0]["secret"], portal_secret)
 
 
 if __name__ == "__main__":

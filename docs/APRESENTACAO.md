@@ -1,186 +1,211 @@
-# UNIFICA: demonstracao local e acesso pela internet
+# UNIFICA - executar com Docker
 
-## O que este pacote entrega
+## O que mudou
 
-Portal Flask na porta 5000, segunda aplicacao Biblioteca na 5001 e Keycloak
-isolado na 8081, com realm unifica-demo. O login oficial agora usa OIDC.
-O ambiente existente na porta 8080 nao e apagado ou reutilizado.
-As contas zezinho/maria ficam disponiveis somente se DEMO_LOGIN_ENABLED=true.
-O pacote local nao conecta ao MySQL: os dados escolares sao demonstrativos.
-O CRUD existente continua incompleto e nao faz parte desta demonstracao SSO.
+A biblioteca foi removida. Existem apenas dois servicos: portal Flask (Waitress)
+e Keycloak. Python, bibliotecas e servidor web ficam dentro da imagem Docker.
+Nao e preciso instalar Python, pip, Java ou MySQL no computador de apresentacao.
 
-## Preparar antes da apresentacao, com internet
+O pacote e para execucao local em computadores compativeis com Docker usando
+conteineres Linux e Docker Compose v2 com suporte a --wait. No Windows, o Docker
+Desktop e seu backend WSL 2/virtualizacao precisam estar funcionando, nao apenas
+instalados. No Linux pode ser usado Docker Engine com Compose. No macOS, Docker
+Desktop. A disponibilidade das imagens para a arquitetura do processador deve
+ser conferida na preparacao; nao se promete compatibilidade com qualquer hardware.
 
-1. Usar Windows 10/11 de 64 bits, Python 3.12 de 64 bits no PATH e Docker Desktop
-   instalado, iniciado e usando conteineres Linux. Verificar os requisitos do
-   Docker no notebook, inclusive virtualizacao e permissao de instalacao.
-2. No terminal PowerShell, entrar na pasta SSO.
-3. Executar:
+## Windows: primeira execucao com internet
 
-```powershell
+Abra Docker Desktop e espere o motor iniciar. Pare o Flask antigo (Ctrl+C no
+terminal onde foi iniciado) para liberar a porta 5000. Na pasta do projeto:
+
+~~~powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\preparar.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1
-```
+~~~
 
-A opcao Bypass vale apenas para esse processo; nao altera a politica global.
-O script cria .venv e .demo. As senhas sao aleatorias e ficam em
-.demo/acessos.txt. O app.env preserva as chaves entre reinicializacoes.
-Nao publique nem envie .demo, .env ou arquivos de logs. Nao use dados reais.
-O arquivo explicitamente selecionado por UNIFICA_ENV_FILE tem prioridade sobre
-variaveis antigas do Windows. Fora da demo, variaveis do sistema prevalecem
-sobre .env. Isso evita reutilizar por engano o client antigo na porta 8080.
+Execute a segunda linha somente se a primeira terminar com sucesso.
+Os scripts procuram docker no PATH e nos caminhos usuais do Docker Desktop.
+A politica Bypass vale apenas para esse processo, sem alterar a politica global.
 
-requirements.txt lista as dependencias diretas. requirements-lock.txt fixa tambem
-as dependencias transitivas usadas nos testes; os scripts e a imagem usam o lock.
+preparar baixa/constroi as imagens e gera chaves e contas locais pelo Python
+dentro do Docker. iniciar aguarda a saude dos dois servicos e abre o navegador.
+Os servicos nao dependem de manter o terminal PowerShell aberto.
 
-O script iniciar abre o navegador e executa Waitress em processos de fundo;
-os erros ficam em .demo/portal-error.log e .demo/biblioteca-error.log.
-Abra http://localhost:5000 e entre com aluno.teste e a senha em acessos.txt.
+- Portal: http://localhost:5000
+- Keycloak: http://localhost:8081
+- Credenciais locais: .demo/acessos.txt
 
-## Preparar o pendrive para funcionar sem internet
+Use aluno.teste e a senha gerada. O administrador do Keycloak e separado.
+Nao envie .demo, .env ou suas senhas para GitHub ou grupos.
+Os scripts nao alteram variaveis permanentes do Windows nem exigem SECRET_KEY
+configurada manualmente. As configuracoes usadas pelo Compose ficam em .demo.
 
-Na maquina de preparacao, com tudo instalado, execute:
+## Proximas vezes
 
-```powershell
+~~~powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1
+~~~
+
+Depois de reiniciar o computador, primeiro inicie Docker Desktop.
+As chaves ficam em .demo e o banco do Keycloak no volume Docker keycloak_data.
+Nao apague .demo nem o volume entre execucoes.
+Para atualizar o codigo da imagem, execute preparar.ps1 com internet e iniciar.ps1.
+Um docker compose restart sozinho NAO incorpora alteracoes do codigo.
+
+## Parar
+
+~~~powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\parar.ps1
+~~~
+
+Isso para os dois servicos sem apagar dados.
+Nao use docker compose down -v se deseja preservar as contas.
+
+## Linux e macOS
+
+Com Docker ativo e permissao de acesso ao motor:
+
+~~~bash
+bash scripts/docker.sh preparar
+bash scripts/docker.sh iniciar
+# Ao terminar:
+bash scripts/docker.sh parar
+~~~
+
+O script Bash cria os arquivos com o UID/GID do usuario e nao precisa de Python
+no host. No Linux, configure previamente o acesso ao Docker conforme as regras
+da instituicao; os scripts nao alteram permissoes do sistema.
+
+## Sem internet / notebook da apresentacao
+
+Na maquina de preparacao, ja testada com internet:
+
+~~~powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\exportar-offline.ps1
-```
+~~~
 
-O script exporta a imagem Keycloak para offline/keycloak.tar e baixa os pacotes
-Python em offline/wheels. Registra versao e arquitetura em offline/ambiente.txt
-e hashes em offline/SHA256.txt. Os pacotes sao especificos para esse Python e
-sistema operacional: use a mesma versao principal/secundaria e arquitetura no
-notebook. Use uma pasta offline nova se mudar o ambiente de preparacao.
+Isso gera offline/imagens.tar com AMBAS as imagens, mais offline/manifest.json
+com SHA-256 e arquitetura. Nao sao mais necessarios wheels ou Python no destino.
+Copie o projeto e offline para o notebook; exclua .git, .venv, .validation-deps,
+.env e .demo. O computador novo gera suas proprias chaves e contas.
+O Docker Desktop precisa estar instalado e inicializado antes da apresentacao.
 
-Copie o projeto inteiro e offline, mas exclua .git, .venv, .validation-deps e
-.demo. Copie tambem os instaladores oficiais do Python e Docker apropriados ao
-notebook; eles NAO sao incluidos ou instalados pelos scripts. Docker Desktop e
-seu backend devem ser instalados e testados antes: o pacote nao resolve WSL,
-virtualizacao, reinicializacoes ou politicas institucionais automaticamente.
+No destino:
 
-No notebook, com Python e Docker ja prontos:
-
-```powershell
+~~~powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\preparar.ps1 -Offline
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\iniciar.ps1
-```
+~~~
 
-O modo Offline usa pip --no-index e docker load. A inicializacao usa --pull never.
-Assim, nenhum download de dependencia e necessario durante a demonstracao.
-Uma nova maquina recebe suas proprias chaves e contas. Para repetir a execucao
-na mesma maquina, preserve .demo e o volume Docker.
+Linux/macOS: bash scripts/docker.sh preparar --offline.
+Para exportar nesses sistemas: bash scripts/docker.sh exportar-offline.
+O pacote precisa corresponder a arquitetura do Docker de destino (por exemplo
+amd64 ou arm64). Os scripts conferem hash e arquitetura antes de carregar.
+A preparacao offline nao baixa pacotes; iniciar usa --pull never --no-build.
 
-## Roteiro para a banca
+O arquivo imagens.tar NAO faz parte do codigo fonte: so e criado depois de
+construir/baixar as imagens e executar a exportacao. Teste em outra maquina com
+a internet desligada antes de considerar o pendrive pronto.
 
-1. Abra http://localhost:5000 e clique em Entrar com a conta escolar.
-2. Confira que a tela de senha esta em localhost:8081. Entre como aluno.teste.
-3. Abra Inicio e clique em Abrir biblioteca escolar, ou abra localhost:5001.
-4. Clique em Entrar com a conta escolar na biblioteca. O Keycloak deve reconhecer
-   a sessao e autenticar sem repetir a senha. Cada app tem client, chave e cookie
-   diferentes: nao e uma simples reutilizacao do cookie do Flask.
-5. Abra Configuracoes no portal e Gerenciar conta para demonstrar a central de conta.
-6. Para testar persistencia, marque Remember Me na tela do Keycloak ao autenticar,
-   feche o navegador e reabra /perfil. O cookie local OIDC e de sessao; o Keycloak
-   pode recuperar a identidade com uma nova ida e volta, respeitando seus limites.
-7. Saia pelo botao e confirme a saida no Keycloak se solicitado.
+## Por que as portas ficam no servico Keycloak
 
-Lembrar de mim: idle de sete dias e limite maximo de trinta dias no realm demo.
-Sem lembrar: idle de trinta minutos e limite maximo de oito horas no Keycloak.
-Navegadores podem restaurar cookies de sessao ou apagar cookies persistentes.
-Nao use janela anonima para testar persistencia. Use sempre localhost, nao alterne
-com 127.0.0.1. Mantenha o relogio do computador correto para validacao dos tokens.
+No ambiente local, o portal usa network_mode: service:keycloak.
+Isso compartilha o namespace de rede entre os dois conteineres, nao com o host.
+O Keycloak escuta na porta 8081 e o Waitress na 8000 desse namespace.
+O Compose publica 8081 e mapeia 5000 para 8000 somente no loopback do computador.
 
-## Limites honestos desta etapa
+Dessa forma http://localhost:8081 significa o mesmo servico para o navegador
+e para o cliente OIDC do Flask. Nao e necessario editar hosts, usar IP fixo,
+host.docker.internal ou desativar validacao do emissor do token.
+A configuracao e para acesso no proprio computador, nao pela rede da escola.
+Se mudar portas/hosts, ajuste em conjunto Compose, PUBLIC_URL, OIDC_ISSUER e
+redirect URIs no Keycloak; trocar apenas uma porta quebra a autenticacao.
 
-- Login SSO, conta e logout iniciado pela aplicacao foram preparados. Nao existe
-  back-channel logout: sair de um app encerra a sessao central, mas o cookie local
-  ja aberto no outro app pode continuar aceito ate expirar. Nao apresente isso como
-  single logout completo. Remover essa limitacao requer sessoes revogaveis no
-  servidor e validacao das notificacoes de logout.
-- Todos os usuarios OIDC recebem nivel normal; ainda falta mapear e aplicar papeis.
-- A biblioteca e um catalogo demonstrativo, nao implementa emprestimos.
-- O modo start-dev e seu armazenamento dev-file sao apenas para demonstracao.
-- O README e este guia descrevem o estado atual; o livro PDF anterior precede estas mudancas.
+## Testes de apresentacao
 
-## Parar sem apagar dados
+1. Abrir localhost:5000 e clicar Entrar com a conta escolar.
+2. Conferir que a senha e solicitada em localhost:8081.
+3. Entrar como aluno.teste e verificar perfil, inicio, calendario e comunicados.
+4. Em Configuracoes, abrir Gerenciar conta e alterar senha.
+5. Marcar Remember Me no login do Keycloak, fechar o navegador e reabrir /perfil.
+   O Flask usa cookie de sessao para OIDC; ao perder esse cookie, pede novamente
+   a autenticacao ao Keycloak, que pode reconhecer sua sessao persistente.
+6. Sair e confirmar o logout no Keycloak se solicitado.
+7. Parar e iniciar os servicos e confirmar que contas e senhas continuam iguais.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\parar.ps1
-```
+A biblioteca e seu atalho foram removidos. O portal continua integrado via OIDC,
+mas agora nao existe uma segunda aplicacao neste pacote para demonstrar SSO
+entre sistemas. O CRUD MySQL ainda e incompleto e nao participa desses testes.
+As permissoes OIDC continuam no nivel normal; papeis por perfil sao trabalho futuro.
 
-Isso encerra os processos registrados e para o Keycloak. Nao execute docker compose
-down -v: essa opcao apagaria o volume. Ao reiniciar o computador, abra Docker Desktop
-e execute iniciar.ps1. Nao e necessario gerar novas chaves.
-Importacao de realm ocorre na primeira criacao; se ele ja existe, Keycloak nao
-sobrescreve as configuracoes. Alteracoes futuras devem ser feitas pelo painel,
-mantendo segredos consistentes; nao apague .demo para tentar atualizar o realm.
+## Migracao da versao anterior
+
+O gerador preserva todas as chaves e as contas existentes e remove apenas as
+configuracoes da biblioteca do arquivo app.env e do JSON usado em novas importacoes.
+Se o realm ja existe no volume, o Keycloak nao sobrescreve sua configuracao na
+inicializacao. Um client antigo da biblioteca pode permanecer la, sem uso;
+nao apagamos seu banco para remove-lo.
+
+Se havia processos Python/Waitress iniciados pelos scripts antigos, encerre-os
+antes da nova execucao; docker compose stop nao controla processos fora do Docker.
 
 ## Diagnostico
 
-| Sintoma | Verificacao |
+~~~powershell
+docker --version
+docker info
+docker compose version
+docker compose ps
+docker compose logs --tail 100
+~~~
+
+| Problema | Acao |
 |---|---|
-| Docker nao encontrado | Instalar Docker Desktop e reabrir terminal |
-| Docker nao responde | Abrir Docker Desktop e aguardar o motor |
-| Porta ocupada | Parar servidor antigo; nao iniciar duas copias |
-| Keycloak nao fica pronto | docker compose logs keycloak |
-| invalid_redirect_uri | Client deve autorizar exatamente /auth/callback do seu PUBLIC_URL |
-| invalid_client | Segredo do client e configuracao do Flask devem coincidir |
-| Login expira ou state invalido | Comecar novamente em /auth/login, sem trocar host ou chave |
-| Falha de wheel offline | Usar Python e arquitetura de offline/ambiente.txt |
-| Usuario/senha invalido | Consultar acessos.txt; realm local e separado do realm antigo |
+| Docker nao encontrado | Reabrir terminal apos instalacao; scripts tambem buscam o executavel em locais comuns |
+| Motor nao responde | Abrir Docker Desktop; verificar WSL 2/virtualizacao e mensagens do aplicativo |
+| Windows containers | Trocar para Linux containers |
+| Porta 5000/8081 ocupada | Parar servidores antigos; nao executar python app.py junto com Compose |
+| Keycloak unhealthy | Consultar docker compose logs keycloak; primeira inicializacao pode demorar |
+| invalid_client | Comparar configuracao do client no painel e .demo/app.env; nao gere chaves novas isoladamente |
+| invalid_redirect_uri | Autorizar exatamente http://localhost:5000/auth/callback no client local |
+| Pacote offline incompatível | Gerar arquivo para a mesma arquitetura do notebook |
+| Falha durante build/pull | Verificar internet, proxy/firewall e disponibilidade das versoes fixadas |
+
+Nao execute docker compose config sem --quiet em capturas ou logs compartilhados,
+pois a configuracao resolvida pode mostrar os segredos de env_file.
 
 ## Hospedagem com internet
 
-O Dockerfile executa a aplicacao com Waitress na porta 8000. Ele nao embute
-segredos, dados locais ou o Keycloak. A publicacao real depende de escolher um
-servidor/provedor, dominio e certificados; nenhuma URL publica foi criada.
+Dockerfile continua utilizavel para hospedar apenas o portal com Waitress:8000.
+A publicacao depende de servidor/provedor, dominio, HTTPS e Keycloak de producao.
+Nenhuma URL publica foi criada.
 
-1. Hospedar Keycloak em modo de producao, com HTTPS, banco suportado persistente
-   (por exemplo PostgreSQL), backups e administrador configurado. Nao publicar
-   compose.yaml local nem suas contas de demonstracao como ambiente de producao.
-2. Criar realm e os clients unifica-portal e unifica-biblioteca, com Standard Flow,
-   autenticacao do client e PKCE S256; Direct Access Grants desativado.
-3. Cadastrar redirects exatos, por exemplo https://portal.seudominio/auth/callback
-   e https://biblioteca.seudominio/auth/callback, cada qual no respectivo client.
-   Registrar tambem a URL raiz com barra final para retorno do logout.
-4. Configurar no gerenciador de segredos/variaveis do provedor os campos de
-   .env.example. OIDC_ISSUER deve ser HTTPS e acessivel pelo navegador e servidores.
-   PUBLIC_URL e BIBLIOTECA_PUBLIC_URL devem conter suas URLs publicas HTTPS.
-   SESSION_COOKIE_SECURE=true e DEMO_LOGIN_ENABLED=false.
-5. Construir a imagem: docker build -t unifica-web .
-6. Publicar dois servicos usando essa imagem. Portal usa o comando padrao.
-   Biblioteca usa waitress-serve --listen=0.0.0.0:8000 biblioteca:app.
-   O provedor/reverse proxy termina HTTPS e encaminha para a porta 8000.
-7. Gerar chaves diferentes para portal e biblioteca e preserva-las; usar segredos
-   dos clients desse ambiente. Nao copiar segredos locais para a hospedagem.
-8. Validar o roteiro completo com duas aplicacoes e realizar os testes de seguranca
-   e logout faltantes antes de admitir usuarios reais.
+1. Hospedar Keycloak em modo producao com HTTPS e banco persistente suportado.
+2. Criar client confidencial unifica-portal, Standard Flow e PKCE S256, sem Direct Grants.
+3. Registrar https://SEU-PORTAL/auth/callback e a raiz com barra para retorno do logout.
+4. Configurar as variaveis de .env.example no gerenciador de segredos do servidor.
+   OIDC_ISSUER deve apontar ao Keycloak HTTPS, PUBLIC_URL ao portal HTTPS e
+   SESSION_COOKIE_SECURE=true. Preservar SECRET_KEY e OIDC_CLIENT_SECRET.
+5. Construir Dockerfile e publicar a porta interna 8000 atras do proxy HTTPS.
 
-Para executar manualmente no desenvolvimento: copiar .env.example para .env,
-preencher os valores e instalar requirements.txt. Depois python app.py e, em
-outro terminal, python biblioteca.py. Apenas criar .env nao cria clients no Keycloak.
+O compose.yaml local usa start-dev, dados ficticios e loopback: nao e um deploy
+de producao. Nao copie as senhas locais para o ambiente publico.
 
-## Verificacoes automatizadas e ensaio ainda necessario
+## Validacao automatizada
 
-Depois de preparar o ambiente:
+Os testes em scripts/verificar.py usam tokens RSA assinados de teste e simulam
+o provedor; nao substituem um login real pelo navegador.
 
-```powershell
-.\.venv\Scripts\python.exe scripts/verificar.py
-.\.venv\Scripts\python.exe scripts/verificar.py --biblioteca
-```
+~~~powershell
+docker compose exec -T portal python scripts/verificar.py
+~~~
 
-Os testes usam chaves RSA e tokens assinados de teste; simulam os endpoints do
-provedor. Verificam PKCE na requisicao, nonce, state, emissor, destinatario,
-expiracao, paginas, arquivos estaticos, CSRF, saida e preservacao das chaves geradas.
-Nao se conectam ao MySQL nem alteram configuracoes reais do Keycloak.
-Na preparacao deste pacote, passaram 9 testes do portal e 9 da biblioteca, alem
-da analise sintatica dos scripts PowerShell. Docker nao estava disponivel nesse
-ambiente: build da imagem, importacao real do realm, retorno pelo navegador e
-execucao offline em outro computador ainda devem ser ensaiados. O arquivo
-offline/keycloak.tar NAO acompanha o codigo: sera criado por exportar-offline.ps1.
+Eles verificam nonce/state, emissor, destinatario, expiracao, paginas, arquivos
+estaticos, logout/CSRF e geracao/migracao das chaves. Nao acessam MySQL.
 
 ## Fontes oficiais
 
-- https://www.keycloak.org/getting-started/getting-started-docker
+- https://docs.docker.com/compose/how-tos/networking/
+- https://docs.docker.com/compose/how-tos/startup-order/
 - https://www.keycloak.org/server/importExport
-- https://www.keycloak.org/server/hostname
-- https://docs.authlib.org/en/latest/oauth2/client/web/flask.html
+- https://www.keycloak.org/getting-started/getting-started-docker
