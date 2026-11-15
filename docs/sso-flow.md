@@ -1,17 +1,17 @@
 # Fluxo de autenticação
 
-1. GET / redireciona para /auth/login quando não há sessão Keycloak no portal.
-2. Authlib inicia Authorization Code Flow com PKCE S256, state e nonce.
-3. O navegador mostra o login do Keycloak ou aproveita sua sessão existente.
-4. /auth/callback troca o código e valida a identidade OIDC.
-5. O Flask registra identidade, provedor e token de formulário na sessão e abre /perfil.
-6. POST /sair ou /auth/sair exige token de formulário e encaminha ao logout do provedor.
+1. Ao abrir o portal sem sessão, o Flask redireciona para `/auth/login`.
+2. A Authlib inicia o Authorization Code Flow com PKCE S256, `state` e `nonce`.
+3. O Keycloak autentica o usuário ou reaproveita a sessão do provedor. O navegador volta para `/auth/callback` com um código temporário.
+4. O Flask troca o código e valida a identidade. Cria a sessão local e abre `/perfil`. O cookie Flask é assinado e guarda dados da sessão. Os tokens OIDC permanecem fora do cookie.
+5. **Sair da conta** envia um POST com token de formulário, limpa a sessão do Flask e solicita o logout ao Keycloak, que pode pedir confirmação.
 
-O formulário local e a página intermediária foram retirados do fluxo. A senha
-é gerenciada pelo Keycloak em /auth/conta. O cookie Flask é assinado, não
-criptografado, e não contém access/refresh/ID tokens. Remember Me pertence ao
-Keycloak; não significa sessão sem prazo. Não há backchannel logout nem
-revalidação remota a cada página. O nível após OIDC ainda é normal para todos.
+## Sessão e conta
 
-O pacote contém um cliente aplicativo. SSO entre sistemas exige adicionar outro
-cliente ao mesmo realm. Consulte [o manual](EXECUCAO.md) para detalhes das URLs.
+**Lembrar de mim** pertence ao Keycloak. Se o navegador perder a sessão do Flask, o portal pode autenticar novamente sem pedir a senha enquanto a sessão do provedor estiver válida.
+
+Em **Configurações**, **Alterar senha** leva a `/auth/alterar-senha`. A rota solicita `UPDATE_PASSWORD` ao Keycloak para a própria conta e retorna às configurações após o fluxo. `/auth/conta` abre o console de conta do Keycloak.
+
+A demonstração inclui um cliente, `unifica-portal`. Para demonstrar login compartilhado entre sistemas diferentes, seria necessário configurar outro cliente no mesmo realm.
+
+Veja a [configuração do Keycloak](keycloack-configuration.md).

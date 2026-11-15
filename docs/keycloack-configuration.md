@@ -14,8 +14,7 @@ O arquivo que gera a instalação é `scripts/configurar_demo.py`. Ele escreve
 - Administrador bootstrap: separado, para o console de administração.
 
 Não edite acessos.txt esperando mudar uma senha: altere-a pelo Keycloak.
-Em Configurações do portal, Gerenciar conta e alterar senha abre o console da
-própria conta. Administradores podem gerenciar usuários pelo console administrativo.
+Em **Configurações**, **Alterar senha** solicita `UPDATE_PASSWORD` ao Keycloak. **Gerenciar conta** abre o console da própria conta. Administradores podem gerenciar usuários pelo console administrativo.
 
 O gerador preserva chaves existentes. O realm já importado não é sobrescrito ao
 reiniciar. Alterações no JSON afetam novas instalações, não automaticamente o

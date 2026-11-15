@@ -2,6 +2,7 @@ from calendar import Calendar
 from datetime import date, timedelta
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from auth.decorators import login_required
+from portal.boletim import DISCIPLINAS_DEMO, AULAS_DEMO
 
 portal = Blueprint("portal", __name__)
 
@@ -65,7 +66,16 @@ def inicio():
 @portal.get("/notas")
 @login_required
 def notas():
-    return render_template("notas.html")
+    notas_lancadas = [nota for _, nota, _ in DISCIPLINAS_DEMO if nota is not None]
+    faltas = sum(faltas for _, _, faltas in DISCIPLINAS_DEMO)
+    return render_template(
+        "notas.html",
+        disciplinas=DISCIPLINAS_DEMO,
+        media=sum(notas_lancadas) / len(notas_lancadas),
+        frequencia=100 * (AULAS_DEMO - faltas) / AULAS_DEMO,
+        faltas=faltas,
+        aulas=AULAS_DEMO,
+    )
 
 
 @portal.get("/calendario")

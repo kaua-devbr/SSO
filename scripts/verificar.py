@@ -98,7 +98,7 @@ class PortalTests(unittest.TestCase):
         with self.client.session_transaction() as session:
             csrf = session["form_token"]
         result = self.client.post("/configuracoes", data={"form_token": csrf, "acao": "senha"})
-        self.assertEqual(result.location, "/auth/conta")
+        self.assertEqual(result.location, "/auth/alterar-senha")
         page = self.client.get("/configuracoes").get_data(as_text=True)
         self.assertNotIn('type="password"', page)
         self.assertIn('/auth/conta', page)

@@ -1,11 +1,13 @@
-# Requisitos de execução
+# Requisitos para execução local
 
-Computador compatível com Docker Linux e Compose com --wait, motor funcionando,
-portas 5000/8081/3307 disponíveis e internet na primeira preparação. Windows/macOS
-podem usar Docker Desktop; Linux pode usar Docker Engine e Compose.
+| Requisito | Uso |
+| --- | --- |
+| Docker com contêineres Linux e Compose com suporte a `up --wait` | Executar Flask, Keycloak e MySQL |
+| PowerShell no Windows ou Bash no Linux e macOS | Rodar os scripts de preparação e inicialização |
+| Portas locais 5000, 8081 e 3307 disponíveis | Acessar o portal, o Keycloak e o MySQL |
+| Internet na primeira preparação online | Baixar as imagens e as dependências |
+| Git ou download ZIP | Obter os arquivos do projeto |
 
-Não requer Python, Java ou MySQL no host para a demo. Offline requer imagens
-previamente exportadas para a arquitetura do destino, além do Docker já pronto.
-Código baixado não inclui contas e dados de outra máquina.
+Docker Desktop é o caminho documentado para Windows e macOS. No Linux, o Docker Engine com o plugin Compose atende ao fluxo. O Python, o Java e o servidor MySQL rodam nos contêineres. O Workbench é opcional.
 
-Veja os passos e diagnóstico no [manual](EXECUCAO.md).
+Para executar sem internet, prepare previamente o Docker e leve as três imagens exportadas para a arquitetura do computador de destino. Consulte o [roteiro offline](APRESENTACAO.md).

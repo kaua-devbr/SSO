@@ -1,17 +1,13 @@
 # UNIFICA - executar com Docker
 
-> Atualizacao MySQL: consulte [MYSQL.md](MYSQL.md). O Compose atual inclui
-> portal, Keycloak e MySQL, com volume mysql_data separado e porta local 3307.
-> Execute preparar antes de iniciar; reexporte pacotes offline com as tres imagens.
-> As telas ainda usam os dados anteriores; o CRUD sera integrado na proxima etapa.
+> A demonstração usa Flask, Keycloak e MySQL. Consulte o [README](../README.md) para o início rápido e o [guia do banco](MYSQL.md) para o esquema e o Workbench.
 
 Guia principal atualizado: [EXECUCAO.md](EXECUCAO.md). Consulte-o para o mapa
 de pastas, login único, endereços e rotina completa.
 
 ## O que mudou
 
-A biblioteca foi removida. Existem apenas dois servicos: portal Flask (Waitress)
-e Keycloak. Python, bibliotecas e servidor web ficam dentro da imagem Docker.
+O Compose inicia três serviços: portal Flask (Waitress), Keycloak e MySQL. Cada serviço usa sua imagem Docker.
 Nao e preciso instalar Python, pip, Java ou MySQL no computador de apresentacao.
 
 O pacote e para execucao local em computadores compativeis com Docker usando
@@ -134,7 +130,7 @@ redirect URIs no Keycloak; trocar apenas uma porta quebra a autenticacao.
 1. Abrir localhost:5000; o portal encaminha diretamente ao Keycloak.
 2. Conferir que a senha e solicitada em localhost:8081.
 3. Entrar como zezinho e verificar perfil, inicio, calendario e comunicados.
-4. Em Configuracoes, abrir Gerenciar conta e alterar senha.
+4. Em **Configurações**, use **Alterar senha** para abrir a atualização da própria senha no Keycloak e confirme o retorno ao portal.
 5. Marcar Remember Me no login do Keycloak, fechar o navegador e reabrir /perfil.
    O Flask usa cookie de sessao para OIDC; ao perder esse cookie, pede novamente
    a autenticacao ao Keycloak, que pode reconhecer sua sessao persistente.
@@ -206,6 +202,7 @@ o provedor; nao substituem um login real pelo navegador.
 
 ~~~powershell
 docker compose exec -T portal python scripts/verificar.py
+docker compose exec -T portal python scripts/verificar_mysql.py
 ~~~
 
 Eles verificam nonce/state, emissor, destinatario, expiracao, paginas, arquivos

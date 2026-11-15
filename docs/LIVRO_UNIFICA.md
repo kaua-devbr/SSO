@@ -1,5 +1,7 @@
 # UNIFICA — Aprendendo o projeto por dentro
 
+> **Material histórico de estudo.** Para executar a versão atual, use o [README do projeto](../README.md). Consulte a [arquitetura atual](architecture.md), o [fluxo SSO](sso-flow.md) e o [guia do MySQL](MYSQL.md) ao comparar os exemplos do livro.
+
 ## Guia de leitura
 
 Este livro acompanha o código disponível em 12 de novembro de 2026. O objetivo é permitir que um estudante entenda a aplicação, execute o portal, acompanhe uma requisição e faça alterações conscientes. Os exemplos usam o projeto real. Quando uma seção propõe uma implementação futura ou um exercício, isso é indicado no texto.

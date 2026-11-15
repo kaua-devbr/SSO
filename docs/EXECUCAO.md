@@ -1,9 +1,6 @@
 # UNIFICA — manual de execução e organização
 
-> Atualizacao MySQL: consulte [MYSQL.md](MYSQL.md). O Compose atual inclui
-> portal, Keycloak e MySQL, com volume mysql_data separado e porta local 3307.
-> Execute preparar antes de iniciar; reexporte pacotes offline com as tres imagens.
-> As telas ainda usam os dados anteriores; o CRUD sera integrado na proxima etapa.
+> A demonstração usa Flask, Keycloak e MySQL. Consulte o [README](../README.md) para o início rápido e o [guia do banco](MYSQL.md) para o esquema e o Workbench.
 
 Este é o guia principal da versão Docker. O portal Flask apresenta as páginas
 escolares; o Keycloak autentica as pessoas pelo OpenID Connect (OIDC).
@@ -202,7 +199,7 @@ servidos pelo Flask. A antiga variável `DEMO_LOGIN_ENABLED` não habilita mais 
 3. O Keycloak valida a senha ou reconhece sua sessão já existente.
 4. O callback valida a resposta OIDC e grava a identidade na sessão Flask.
 5. O portal permite acessar páginas protegidas.
-6. Alterar senha abre o gerenciamento da conta no Keycloak.
+6. **Alterar senha** chama `/auth/alterar-senha` e solicita `UPDATE_PASSWORD` ao Keycloak. O link de gerenciamento de conta usa `/auth/conta`.
 7. Sair exige POST com token de formulário, limpa a sessão local e encaminha
    ao logout do Keycloak. Pode haver confirmação antes de retornar ao portal.
 
@@ -347,8 +344,10 @@ docker compose version
 docker compose ps
 docker compose logs --tail 100 portal
 docker compose logs --tail 100 keycloak
+docker compose logs --tail 100 mysql
 docker compose config --quiet
 docker compose exec -T portal python scripts/verificar.py
+docker compose exec -T portal python scripts/verificar_mysql.py
 ```
 
 Os primeiros comandos conferem ferramentas e serviços; `logs` ajuda a localizar

@@ -1,20 +1,15 @@
-# Arquitetura atual
+# Arquitetura do UNIFICA
 
-O navegador acessa o portal em http://localhost:5000. O portal usa Flask,
-Jinja e Waitress, importando `app:app` na porta interna 8000. O Keycloak em
-http://localhost:8081 fornece autenticação OIDC; não fornece as páginas escolares.
+| Serviço | Responsabilidade | Endereço local |
+| --- | --- | --- |
+| Portal | Flask e Jinja servidos por Waitress | http://localhost:5000 |
+| Keycloak | Identidade, login e senha via OpenID Connect | http://localhost:8081 |
+| MySQL | Esquema acadêmico e perfis iniciais | `127.0.0.1:3307` no Workbench |
 
-O Compose possui tres servicos: portal, keycloak e mysql. Portal e Keycloak compartilham namespace de
-rede por `network_mode: service:keycloak`. As portas são publicadas no serviço
-Keycloak somente no loopback do host. As imagens e sistemas de arquivos são distintos.
+O portal escuta na porta interna 8000. Ele compartilha a rede do Keycloak com `network_mode: service:keycloak`, o que permite usar o mesmo emissor OIDC no navegador e no Flask. O Compose publica as portas do portal e do Keycloak no serviço `keycloak`. O conector Python usa `mysql:3306` na rede do Compose.
 
-O volume keycloak_data conserva o banco local do Keycloak. `.demo` contém
-configuração inicial e segredos gerados na máquina. O portal não usa MySQL neste
-fluxo; crud_usuarios permanece separado e incompleto. Os dados escolares são
-exemplos e preferências/leitura ficam na sessão.
+O volume `keycloak_data` guarda as contas e configurações do provedor. O volume `mysql_data` guarda o banco escolar. A preparação gera a configuração de cada instalação em `.demo/`.
 
-Consulte [o manual](EXECUCAO.md) para pastas, rede, persistência e limites.
+O portal exige uma sessão Keycloak para as páginas escolares. Notas e frequência são calculadas a partir dos dados de demonstração em `portal/boletim.py`. Calendário e comunicados também usam exemplos. Aparência e leitura de comunicados ficam na sessão do Flask. A ligação das telas ao MySQL e as permissões escolares por perfil estão previstas para uma etapa futura.
 
-O servico mysql utiliza volume mysql_data e expoe 127.0.0.1:3307 para Workbench.
-O conector Python acessa mysql:3306. O esquema inicial tem sete tabelas;
-a integracao das telas ainda esta pendente. Veja [MYSQL.md](MYSQL.md).
+Veja o [manual de execução](EXECUCAO.md), o [fluxo SSO](sso-flow.md) e o [guia do banco](MYSQL.md).

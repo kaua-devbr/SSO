@@ -1,36 +1,36 @@
-# Testes da versão Docker
+# Como validar a instalação
 
-Após reconstruir e iniciar a imagem atual:
+Na raiz do projeto, depois de preparar a imagem e iniciar os três serviços, execute:
 
 ```powershell
+docker compose ps
+Invoke-RestMethod http://localhost:5000/healthz
+docker compose exec -T portal python scripts/verificar.py
+docker compose exec -T portal python scripts/verificar_mysql.py
+docker compose exec -T portal python scripts/testar_config_mysql.py
+```
+
+| Verificação | Resultado esperado |
+| --- | --- |
+| Compose e `/healthz` | Três serviços saudáveis e status `ok` no Flask |
+| `verificar.py` | 12 testes aprovados com OIDC simulado. A suíte cobre login, sessão, páginas, arquivos estáticos, logout e o redirecionamento de alteração de senha. |
+| `verificar_mysql.py` | Conexão, sete tabelas e perfis iniciais confirmados por consultas de leitura |
+| `testar_config_mysql.py` | Quatro testes de configuração e transações usando arquivos temporários e conexão simulada |
+
+Se a saída de `verificar.py` ainda mostrar que o teste espera `/auth/conta` ao selecionar **Alterar senha**, atualize a imagem do portal e execute o teste novamente. O código atual espera `/auth/alterar-senha`.
+
+```powershell
+docker compose build portal
+docker compose up -d --no-deps portal
 docker compose exec -T portal python scripts/verificar.py
 ```
 
-A suíte verifica login OIDC com tokens de teste assinados, PKCE, rejeição de
-nonce/state/emissor/destinatário/expiração inválidos, páginas protegidas,
-remoção do login local, sonda /healthz, logout com CSRF, templates, estáticos,
-sintaxe Python e preservação/migração de configuração. Não acessa MySQL nem
-altera o realm em execução. O provedor é simulado: não substitui login real.
+## Validação pelo navegador
 
-Teste manualmente login, logout confirmado, Remember Me, alteração de senha,
-navegação, calendário, comunicados e aparência. Pare/inicie os serviços e confirme
-persistência das contas. Por fim, baixe uma cópia limpa em outra máquina.
+1. Abra o portal em uma janela privada. Confirme o redirecionamento ao Keycloak, entre com a conta de demonstração e verifique o retorno ao perfil.
+2. Abra todas as páginas pelo menu. Em **Notas e Frequência**, confira a média, a frequência e a disposição das tabelas em uma janela estreita.
+3. No calendário, selecione outra data. Em comunicados, use os filtros e marque avisos como lidos. Em configurações, altere tema e fonte.
+4. Use **Alterar senha** com uma conta de teste. Confirme o retorno ao portal, saia e entre usando a nova senha.
+5. Em uma janela normal, teste **Lembrar de mim** fechando o navegador por completo e abrindo o portal novamente. Depois teste **Sair da conta** e confirme o logout no Keycloak se for solicitado.
 
-O usuário confirmou previamente dois contêineres Healthy e login aluno.teste.
-Isso se refere à versão anterior à retirada da página intermediária: a imagem
-precisa ser reconstruída para validar o fluxo mais recente no navegador.
-
-Consulte [EXECUCAO.md](EXECUCAO.md) para comandos e problemas frequentes.
-
-## Resultado desta revisão
-
-Os 12 testes automatizados passaram em Python 3.12 com as dependências de
-requirements-lock.txt. Foram conferidas também a sintaxe Python e PowerShell,
-os links locais da documentação e a preservação dos layouts arquivados.
-Os recursos estáticos referenciados nas páginas renderizadas existem e os
-arquivos estáticos foram servidos pelo cliente de teste Flask.
-
-Não foi executado build/Compose nesta sessão, pois o executável Docker não
-estava acessível. A instalação real já relatada pelo usuário precisa reconstruir
-a imagem e confirmar no navegador o novo redirecionamento direto ao Keycloak.
-Nenhum dado do MySQL, segredo de .demo ou volume do Keycloak foi alterado.
+Antes da apresentação, repita a [instalação limpa](tutorial.md) em outro computador.

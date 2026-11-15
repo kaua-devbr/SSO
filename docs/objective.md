@@ -1,9 +1,7 @@
-# Objetivo
+# Objetivo do UNIFICA
 
-UNIFICA é um portal escolar com autenticação centralizada pelo Keycloak usando
-OpenID Connect. A entrega atual facilita uma demonstração local reproduzível
-com Docker, login único no provedor e navegação pelas páginas escolares.
+O UNIFICA é um projeto de TCC para centralizar o acesso a serviços escolares com Keycloak e OpenID Connect. A versão atual oferece um portal Flask com perfil, boletim de demonstração, calendário, comunicados, configurações e gerenciamento da própria senha pelo Keycloak.
 
-A Biblioteca foi removida. Integração com outros sistemas escolares, persistência
-acadêmica no MySQL, permissões por perfil e hospedagem pública são próximos
-trabalhos, não funcionalidades concluídas. Veja [EXECUCAO.md](EXECUCAO.md).
+A execução local com Docker inclui o MySQL com o esquema acadêmico inicial. Integração das telas ao banco, autorização escolar por perfil, acesso a outros sistemas e hospedagem pública fazem parte da evolução do projeto.
+
+Veja a [arquitetura](architecture.md) e o [guia de instalação](../README.md).

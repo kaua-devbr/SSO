@@ -10,7 +10,7 @@ anteriores e não foram conectadas ao novo CRUD.
 
 | Arquivo | Finalidade |
 |---|---|
-| `database/init/001_schema.sql` | Sete tabelas, relações, regras e três perfis iniciais |
+| [`structure.sql`](../crud_usuarios/database/init/structure.sql) | Sete tabelas, relações, regras e três perfis iniciais |
 | `config/database.py` | Conectar sob demanda e gerenciar commit, rollback e fechamento |
 | `scripts/configurar_mysql.py` | Gerar credenciais locais separadas sem mudar chaves OIDC |
 | `scripts/verificar_mysql.py` | Verificar conexão, tabelas e perfis, somente por leitura |
@@ -141,7 +141,7 @@ docker compose exec -T portal python scripts/testar_config_mysql.py
 
 Reexporte o pacote offline depois da preparação atual: agora ele precisa conter
 portal, Keycloak e MySQL. Pacotes antigos com apenas duas imagens não bastam.
-Inclua `database/init` ao copiar o código. Continue usando uma arquitetura compatível.
+Inclua `crud_usuarios/database/init` ao copiar o código. Continue usando uma arquitetura compatível.
 
 O servidor e a execução real do SQL precisam ser validados com Docker. Testes
 de configuração e análise estática não substituem `verificar_mysql.py` no banco

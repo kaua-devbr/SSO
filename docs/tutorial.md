@@ -1,9 +1,6 @@
 # UNIFICA — instalação limpa no Windows com Docker Desktop
 
-> Atualizacao MySQL: consulte [MYSQL.md](MYSQL.md). O Compose atual inclui
-> portal, Keycloak e MySQL, com volume mysql_data separado e porta local 3307.
-> Execute preparar antes de iniciar; reexporte pacotes offline com as tres imagens.
-> As telas ainda usam os dados anteriores; o CRUD sera integrado na proxima etapa.
+> A demonstração usa Flask, Keycloak e MySQL. Consulte o [README](../README.md) para o início rápido e o [guia do banco](MYSQL.md) para o esquema e o Workbench.
 
 Este roteiro usa PowerShell, Docker Desktop com contêineres Linux e, opcionalmente,
 o terminal integrado do VS Code. Execute cada etapa separadamente. Se uma
@@ -22,14 +19,7 @@ Ainda existem mudanças locais não publicadas. Antes de distribuir este roteiro
 o responsável precisa revisar, commitar e enviar a versão pretendida ao GitHub.
 O download não inclui alterações que existem apenas no computador do autor.
 
-**Pendência conhecida:** a troca de senha via `UPDATE_PASSWORD` foi iniciada,
-mas sua validação completa está pendente. Um teste ainda espera `/auth/conta`,
-enquanto a implementação encaminha para `/auth/alterar-senha`. Portanto, não
-interprete esse teste falhando como motivo para reinstalar o Docker, nem declare
-a versão completamente validada até corrigir e executar a suíte.
-
-O login e os dois contêineres saudáveis foram confirmados anteriormente pelo
-usuário. Este documento não representa um teste realizado em outra máquina limpa.
+Confira os resultados esperados no [guia de testes](tests.md). Inclua uma rodada de login e troca de senha no navegador antes da apresentação.
 
 ## 1. Conferir o computador
 
@@ -292,9 +282,7 @@ Senhas alteradas posteriormente não voltam automaticamente à senha inicial.
 Não execute `ajustar_usuario_demo.py` como parte da instalação normal: ele é
 uma migração explícita que redefine a credencial da conta de demonstração.
 
-O cadastro de outras contas ocorre no Keycloak. O CRUD MySQL não está integrado
-nesta demonstração. A troca de senha pelo botão novo precisa da validação
-registrada na seção 0 antes de ser considerada concluída.
+Outras contas são cadastradas no Keycloak. Em **Configurações → Alterar senha**, o portal abre a troca de senha da própria conta no Keycloak. Ao concluir, confira o retorno às configurações.
 
 ## 10. Executar a suíte e interpretar o resultado
 
